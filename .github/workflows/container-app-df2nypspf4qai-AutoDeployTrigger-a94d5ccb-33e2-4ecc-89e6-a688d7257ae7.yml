@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-df2nypspf4qai
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'server/**'
+    - '.github/workflows/container-app-df2nypspf4qai-AutoDeployTrigger-a94d5ccb-33e2-4ecc-89e6-a688d7257ae7.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPDF2NYPSPF4QAI_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPDF2NYPSPF4QAI_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPDF2NYPSPF4QAI_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/server 
+          registryUrl: 
+          registryUsername: ${{ secrets.CONTAINERAPPDF2NYPSPF4QAI_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPDF2NYPSPF4QAI_REGISTRY_PASSWORD }}
+          containerAppName: container-app-df2nypspf4qai
+          resourceGroup: todonodejspgsqlgoogleauth94329f5c
+          imageToBuild: default/container-app-df2nypspf4qai:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
